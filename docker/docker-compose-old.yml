@@ -1,0 +1,19 @@
+version: '3'
+services:
+  rabbitmq:
+    build: ./rabbitmq
+    hostname: rabbit
+    ports:
+    - 15672:15672
+    - 5672:5672
+    labels:
+      NAME: rabbitmq
+
+  consul-agent:
+    image: consul:latest
+    hostname: consul
+    ports:
+    - 8300:8300
+    - 8400:8400
+    - 8500:8500
+    - 8600:8600

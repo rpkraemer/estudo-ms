@@ -1,0 +1,28 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: cep-messaging-ms
+ 
+  cloud:
+    stream:
+      default-binder: rabbit
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        prefer-ip-address: true
+        instance-id: ${spring.application.name}:${random.value}
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+management:
+  endpoint:
+    health:
+      show-details: always

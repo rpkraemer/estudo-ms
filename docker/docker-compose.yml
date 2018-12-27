@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+
+  mongo:
+    image: mongo:3
+    ports:
+      - "27017:27017"
+
+  elasticsearch:
+    image: "elasticsearch:2"
+    command: "elasticsearch -Des.cluster.name='graylog'"
+
+  graylog:
+    image: graylog2/server:2.2.2-1
+    environment:
+      GRAYLOG_PASSWORD_SECRET: somepasswordpepper
+      GRAYLOG_ROOT_PASSWORD_SHA2: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+      GRAYLOG_WEB_ENDPOINT_URI: http://127.0.0.1:9000/api
+    depends_on:
+      - mongo
+      - elasticsearch
+    ports:
+      - "9000:9000"
+      - "12201:12201/udp"
+      - "1514:1514"
+
+  consul:
+    image: "consul:0.9.3"
+    container_name: "consul"
+    hostname: "consul"
+    ports:
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:53"
+
+  rabbitmq:
+    build: ./rabbitmq
+    hostname: rabbit
+    ports:
+    - 15672:15672
+    - 5672:5672
+    labels:
+      NAME: rabbitmq
