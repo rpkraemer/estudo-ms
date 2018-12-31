@@ -57,7 +57,7 @@ public class CepBrokerProcessorTest {
 
 		final Message<CepToAddressRequest> inboundMessage = MessageBuilder.withPayload(payload).build();
 
-		new MockCepMsProxy(cepMsProxy).toReturnValidAddress();
+		new MockCepMsProxy(cepMsProxy).toReturn(expectedValidAddress());
 
 		assertThat(processor.cepToAddressRequest().send(inboundMessage)).isTrue();
 

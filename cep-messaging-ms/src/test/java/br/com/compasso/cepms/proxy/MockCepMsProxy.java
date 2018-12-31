@@ -13,15 +13,7 @@ public class MockCepMsProxy {
 		this.mock = mock;
 	}
 
-	public void toReturnValidAddress() {
-		AddressDTO address = new AddressDTO();
-		address.setCepNumber("99010030");
-		address.setCity("Passo Fundo");
-		address.setComplements("Apto 1234");
-		address.setNeighborhood("Centro");
-		address.setState("RS");
-		address.setStreet("Rua Morom");
-
+	public void toReturn(AddressDTO address) {
 		when(mock.getAddressByCep(anyString())).thenReturn(address);
 	}
 
