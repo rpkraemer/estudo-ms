@@ -1,11 +1,12 @@
 package br.com.compasso.cepms.service.external;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.only;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,17 +39,32 @@ public class ViaCepServiceTest {
 
 	@Test
 	public void shouldReturnAValidCep() {
-		when(env.getProperty(anyString())).thenReturn("http://viacep.com.br/ws");
-		when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), nullable(HttpEntity.class),
-				eq(ViaCepAddressDTO.class)))
-						.thenReturn(new ResponseEntity<ViaCepAddressDTO>(new ViaCepAddressDTO(), HttpStatus.OK));
+		// Given
+		given(env.getProperty(anyString())).willReturn("http://viacep.com.br/ws");
+		given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), nullable(HttpEntity.class),
+				eq(ViaCepAddressDTO.class))).willReturn(validCepResponse());
 
-		viaCepService.getAddressByCep("99010030");
+		// When
+		ViaCepAddressDTO foundedAddress = viaCepService.getAddressByCep("99010030");
 
-		verify(env, only()).getProperty(anyString());
-		verify(restTemplate, only()).exchange(eq("http://viacep.com.br/ws/99010030/json"), eq(HttpMethod.GET),
+		// Then
+		then(env).should(only()).getProperty(anyString());
+		then(restTemplate).should(only()).exchange(eq("http://viacep.com.br/ws/99010030/json"), eq(HttpMethod.GET),
 				nullable(HttpEntity.class), eq(ViaCepAddressDTO.class));
 
+		assertThat(foundedAddress).isEqualToComparingFieldByField(validCepResponse().getBody());
+	}
+
+	private ResponseEntity<ViaCepAddressDTO> validCepResponse() {
+		ViaCepAddressDTO body = new ViaCepAddressDTO();
+		body.setBairro("Teste");
+		body.setCep("99010030");
+		body.setComplemento("Teste");
+		body.setLocalidade("Passo Fundo");
+		body.setLogradouro("Teste");
+		body.setUf("RS");
+
+		return new ResponseEntity<ViaCepAddressDTO>(body, HttpStatus.OK);
 	}
 
 	@Test
@@ -56,18 +72,18 @@ public class ViaCepServiceTest {
 		final HttpClientErrorException ex = new HttpClientErrorException(HttpStatus.BAD_GATEWAY,
 				HttpStatus.BAD_REQUEST.getReasonPhrase(), "Erro na ViaCEP".getBytes(), null);
 
-		when(env.getProperty(anyString())).thenReturn("http://viacep.com.br/ws");
-		when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), nullable(HttpEntity.class),
-				eq(ViaCepAddressDTO.class))).thenThrow(ex);
+		// Given
+		given(env.getProperty(anyString())).willReturn("http://viacep.com.br/ws");
+		given(restTemplate.exchange(anyString(), eq(HttpMethod.GET), nullable(HttpEntity.class),
+				eq(ViaCepAddressDTO.class))).willThrow(ex);
 
+		// When
 		try {
 			viaCepService.getAddressByCep("99010030");
 			Assert.fail("Deveria ter lançado exceção");
 		} catch (TechnicalException e) {
-			/*
-			 * Esperado
-			 */
+			// Then
+			then(env).should(only()).getProperty(anyString());
 		}
-		verify(env, only()).getProperty(anyString());
 	}
 }
